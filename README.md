@@ -3,7 +3,7 @@
 ## This uses CSS's Admin flags and requires users to have '@css/ban' flags for all commands. No need to add admins to the mysql database! 
 ## css_ban and css_unban can be used with also username or steamid!
 ## All Credits to partiusfabaa
-#___________________________
+# ___________________________
 
 # cs2-MiniAdmin
 Adds basic administrator functions
