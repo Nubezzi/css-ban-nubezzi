@@ -1,3 +1,10 @@
+# Complete Fork on partiusfabaa's orginal plugin.
+## This only contains the css_who, css_ban and css_who functionality.
+## This uses CSS's Admin flags and requires users to have '@css/ban' flags for all commands. No need to add admins to the mysql database! 
+## css_ban and css_unban can be used with also username or steamid!
+## All Credits to partiusfabaa
+#___________________________
+
 # cs2-MiniAdmin
 Adds basic administrator functions
 
