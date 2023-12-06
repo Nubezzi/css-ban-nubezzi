@@ -37,8 +37,8 @@ public class MiniAdmin : BasePlugin
     public override void Load(bool hotReload)
     {
         _dbConnectionString = BuildConnectionString();
-        Task.Run(() => CreateTable(_dbConnectionString));
-        Task.Run(() => CreateAdminsTable(_dbConnectionString));
+        CreateTable(_dbConnectionString);
+        CreateAdminsTable(_dbConnectionString);
 
         var path = Path.Combine(ModuleDirectory, "maps.txt");
         if(!File.Exists(path))
@@ -52,14 +52,14 @@ public class MiniAdmin : BasePlugin
 
             var player = new CCSPlayerController(entity);
 
-            Task.Run(() => OnClientConnectedAsync(slot, player, new SteamID(player.SteamID)));
+            OnClientConnectedAsync(slot, player, new SteamID(player.SteamID));
         });
 
         RegisterListener<Listeners.OnClientDisconnectPost>(slot => { _playerPlayTime[slot + 1] = DateTime.MinValue; });
 
         AddTimer(300, () =>
         {
-            Task.Run(Timer_DeleteAdminAsync);
+           Timer_DeleteAdminAsync();
         }, TimerFlags.REPEAT);
         CreateMenu();
     }
@@ -84,31 +84,27 @@ public class MiniAdmin : BasePlugin
     {
         try
         {
-            await using var connection = new MySqlConnection(_dbConnectionString);
-
-            var unbanUsers = await connection.QueryAsync<User>(
+            using var connection = new MySqlConnection(_dbConnectionString);
+            var unbanUsers = connection.Query<User>(
                 "SELECT * FROM miniadmin_bans WHERE EndBanTime <= @CurrentTime AND BanActive = 1 AND EndBanTime > 0",
                 new { CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() });
-
             foreach (var user in unbanUsers)
             {
                 PrintToServer($"Unban: {user.SteamId}", ConsoleColor.DarkMagenta);
-                await UnbanUser("Console", "Console", user.SteamId, "The deadline has passed");
+                UnbanUser("Console", "Console", user.SteamId, "The deadline has passed");
             }
-
-            await Timer_DeleteAdminAsync();
-
-            var banUser = await connection.QueryFirstOrDefaultAsync<User>(
+            Timer_DeleteAdminAsync();
+            var banUser = connection.QueryFirstOrDefault<User>(
                 "SELECT * FROM miniadmin_bans WHERE SteamId64 = @SteamId64 AND BanActive = 1",
                 new { steamId.SteamId64 });
-
             if (banUser != null) Server.ExecuteCommand($"kick {player.PlayerName}");
             else
                 _playerPlayTime[slot + 1] = DateTime.Now;
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            var textsthi = Convert.ToString(e);
+            Server.PrintToConsole(textsthi);
         }
     }
 
@@ -292,7 +288,7 @@ public class MiniAdmin : BasePlugin
             .Select(m => m.Value)
             .ToArray();
 
-        var convertCmdArg = Convert.ToInt32(ExtractValueInQuotes(command.GetArg(1)));
+        // var convertCmdArg = Convert.ToInt32(ExtractValueInQuotes(command.GetArg(1)));
 
         var target = GetTarget(command);
         //var userId = NativeAPI.GetUseridFromIndex(convertCmdArg + 1);
@@ -308,13 +304,12 @@ public class MiniAdmin : BasePlugin
             var endBanTime = Convert.ToInt32(ExtractValueInQuotes(command.GetArg(2)));
             var reason = ExtractValueInQuotes(command.GetArg(3));
 
-            Console.WriteLine($"ExtractValue: {endBanTime}");
-            Console.WriteLine($"Split: {splitCmdArgs[0]} + {splitCmdArgs[1]} + {splitCmdArgs[2]}");
-
             var startBanTimeUnix = DateTime.UtcNow.GetUnixEpoch();
             var endBanTimeUnix = DateTime.UtcNow.AddMinutes(endBanTime).GetUnixEpoch();
 
-            var msg = Task.Run(() => AddBan(new User
+            Server.PrintToConsole($"start: {startBanTimeUnix}, end: {endBanTimeUnix}, user {player.PlayerName}, id {player.SteamID}, reason {reason}, minutes {endBanTime}");
+
+            var msg = AddBan(new User
             {
                 AdminUsername = controller != null ? controller.PlayerName : "Console",
                 AdminSteamId = controller != null ? new SteamID(controller.SteamID).SteamId2 : "Console",
@@ -328,9 +323,9 @@ public class MiniAdmin : BasePlugin
                 StartBanTime = startBanTimeUnix,
                 EndBanTime = endBanTime == 0 ? 0 : endBanTimeUnix,
                 BanActive = true
-            })).Result;
+            }).Result;
 
-            KickClient($"{player.SteamID}");
+            Server.ExecuteCommand($"kick {player.PlayerName}");
 
             ReplyToCommand(controller, msg);
 
@@ -364,13 +359,13 @@ public class MiniAdmin : BasePlugin
         var startTimeUnix = DateTime.UtcNow.GetUnixEpoch();
         var endTimeUnix = DateTime.UtcNow.AddSeconds(endTime).GetUnixEpoch();
 
-        var msg = Task.Run(() => AddAdmin(new Admins
+        var msg = AddAdmin(new Admins
         {
             Username = username,
             SteamId = steamId,
             StartTime = startTimeUnix,
             EndTime = endTime == 0 ? 0 : endTimeUnix
-        })).Result;
+        }).Result;
 
         PrintToServer(msg, ConsoleColor.Green);
     }
@@ -442,10 +437,10 @@ public class MiniAdmin : BasePlugin
         var steamId = ExtractValueInQuotes(splitCmdArgs[0]);
         var reason = ExtractValueInQuotes(splitCmdArgs[1]);
 
-        var msg = Task.Run(() => UnbanUser(
+        var msg = UnbanUser(
             controller != null ? controller.PlayerName : "Console",
             controller != null ? new SteamID(controller.SteamID).SteamId2 : "Console",
-            steamId, reason)).Result;
+            steamId, reason).Result;
     
         ReplyToCommand(controller, msg); 
     }
@@ -465,7 +460,7 @@ public class MiniAdmin : BasePlugin
 
         var steamId = ExtractValueInQuotes(cmdArg);
         
-        var msg = Task.Run(() => DeleteAdmin(steamId)).Result;
+        var msg = DeleteAdmin(steamId).Result;
 
         PrintToServer(msg, ConsoleColor.Green);
     }
@@ -493,26 +488,27 @@ public class MiniAdmin : BasePlugin
     {
         try 
         {
-            await using var connection = new MySqlConnection(_dbConnectionString);
-
-            var user = await connection.QueryFirstOrDefaultAsync<User>(
-                "SELECT * FROM miniadmin_bans WHERE SteamId = @SteamId AND BanActive = 1",
-                new { SteamId = steamId });
-
+            // Server.PrintToConsole("u1");
+            using var connection = new MySqlConnection(_dbConnectionString);
+            // Server.PrintToConsole("u2");
+            var user = connection.QueryFirstOrDefault<User>(
+                "SELECT * FROM miniadmin_bans WHERE (SteamId = @SteamId OR Username = @UserName) AND BanActive = 1",
+                new { SteamId = steamId, UserName = steamId });
+            // Server.PrintToConsole("u3");
             if (user == null) return "User not found or not currently banned";
-
+            // Server.PrintToConsole("u4");
             user.UnbanReason = reason;
             user.AdminUnlockedUsername = adminName;
             user.AdminUnlockedSteamId = adminSteamId;
             user.BanActive = false;
-
-            await connection.ExecuteAsync(@"
+            // Server.PrintToConsole("u5");
+            connection.Execute(@"
                     UPDATE miniadmin_bans
                     SET UnbanReason = @UnbanReason, AdminUnlockedUsername = @AdminUnlockedUsername,
                         AdminUnlockedSteamId = @AdminUnlockedSteamId, BanActive = @BanActive
                     WHERE SteamId = @SteamId AND BanActive = 1
                     ", user);
-
+            // Server.PrintToConsole("u6");
             return $"Player {steamId} has been successfully unblocked with reason: {reason}";
         }
         catch (Exception e)
