@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\MiniAdmin",
+    "\\MiniAdmin\\bin",
+    "\\MiniAdmin\\bin\\Debug",
+    "\\MiniAdmin\\bin\\Debug\\net7.0",
+    "\\MiniAdmin\\obj",
+    "\\MiniAdmin\\obj\\Debug\\net7.0",
+    "\\MiniAdmin\\obj\\Debug\\net7.0\\ref",
+    "\\MiniAdmin\\obj\\Debug\\net7.0\\refint",
+    "\\MiniAdmin\\obj\\Release\\net7.0",
+    "\\MiniAdmin\\obj\\Release\\net7.0\\ref"
+  ],
+  "PreviewInSolutionExplorer": false
+}
