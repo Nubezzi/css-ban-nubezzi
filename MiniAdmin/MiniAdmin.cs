@@ -274,8 +274,8 @@ public class MiniAdmin : BasePlugin
     }
 
 
-    [ConsoleCommand("css_ban", "ban")]
-    [CommandHelper(1, "<#userid or name> <time_seconds> <reason>")]
+    [ConsoleCommand("css_ban", "ban a player")]
+    [CommandHelper(1, "<#userid or name> <time_minutes> <reason>")]
     [RequiresPermissions("@css/ban")]
     public void OnCmdBan(CCSPlayerController? controller, CommandInfo command)
     {
@@ -284,7 +284,7 @@ public class MiniAdmin : BasePlugin
 
         if (command.ArgCount is < 4 or > 4)
         {
-            ReplyToCommand(controller, "Using: css_ban <userid> <time_seconds> <reason>");
+            ReplyToCommand(controller, "Using: css_ban <userid> <time_minutes> <reason>");
             return;
         }
 
@@ -292,7 +292,7 @@ public class MiniAdmin : BasePlugin
             .Select(m => m.Value)
             .ToArray();
 
-        var convertCmdArg = Convert.ToInt32(ExtractValueInQuotes(splitCmdArgs[0]));
+        var convertCmdArg = Convert.ToInt32(ExtractValueInQuotes(command.GetArg(1)));
 
         var target = GetTarget(command);
         //var userId = NativeAPI.GetUseridFromIndex(convertCmdArg + 1);
@@ -305,14 +305,14 @@ public class MiniAdmin : BasePlugin
                 return;
             }
 
-            var endBanTime = Convert.ToInt32(ExtractValueInQuotes(splitCmdArgs[1]));
-            var reason = ExtractValueInQuotes(splitCmdArgs[2]);
+            var endBanTime = Convert.ToInt32(ExtractValueInQuotes(command.GetArg(2)));
+            var reason = ExtractValueInQuotes(command.GetArg(3));
 
             Console.WriteLine($"ExtractValue: {endBanTime}");
             Console.WriteLine($"Split: {splitCmdArgs[0]} + {splitCmdArgs[1]} + {splitCmdArgs[2]}");
 
             var startBanTimeUnix = DateTime.UtcNow.GetUnixEpoch();
-            var endBanTimeUnix = DateTime.UtcNow.AddSeconds(endBanTime).GetUnixEpoch();
+            var endBanTimeUnix = DateTime.UtcNow.AddMinutes(endBanTime).GetUnixEpoch();
 
             var msg = Task.Run(() => AddBan(new User
             {
@@ -330,7 +330,7 @@ public class MiniAdmin : BasePlugin
                 BanActive = true
             })).Result;
 
-            KickClient($"{convertCmdArg}");
+            KickClient($"{player.SteamID}");
 
             ReplyToCommand(controller, msg);
 

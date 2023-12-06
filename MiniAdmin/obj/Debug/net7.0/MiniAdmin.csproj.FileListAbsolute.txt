@@ -47,3 +47,4 @@ C:\Users\paten\Desktop\css_banadmin\MiniAdmin\obj\Debug\net7.0\MiniAdmin.dll
 C:\Users\paten\Desktop\css_banadmin\MiniAdmin\obj\Debug\net7.0\refint\MiniAdmin.dll
 C:\Users\paten\Desktop\css_banadmin\MiniAdmin\obj\Debug\net7.0\MiniAdmin.pdb
 C:\Users\paten\Desktop\css_banadmin\MiniAdmin\obj\Debug\net7.0\ref\MiniAdmin.dll
+C:\Users\paten\Desktop\css_banadmin\MiniAdmin\obj\Debug\net7.0\MiniAdmin.sourcelink.json

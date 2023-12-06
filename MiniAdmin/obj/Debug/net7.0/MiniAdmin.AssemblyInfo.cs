@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MiniAdmin")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ececbf780ceac8378a637d8be31b78e8e3285150")]
 [assembly: System.Reflection.AssemblyProductAttribute("MiniAdmin")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MiniAdmin")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
