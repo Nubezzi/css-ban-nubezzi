@@ -97,7 +97,10 @@ public class MiniAdmin : BasePlugin
             var banUser = connection.QueryFirstOrDefault<User>(
                 "SELECT * FROM miniadmin_bans WHERE SteamId64 = @SteamId64 AND BanActive = 1",
                 new { steamId.SteamId64 });
-            if (banUser != null) Server.ExecuteCommand($"kickid {user.SteamId} 'User Banned from server by admin. For appeals, visit our discord which can be found at klonkkusauna.vercel.app'");
+            if (banUser != null)
+            {
+                Server.ExecuteCommand($"kickid {player.UserId} Banned from server by admin. For appeals, visit our discord which can be found at klonkkusauna.vercel.app");
+            }
             else
                 _playerPlayTime[slot + 1] = DateTime.Now;
         }
@@ -324,8 +327,8 @@ public class MiniAdmin : BasePlugin
                 EndBanTime = endBanTime == 0 ? 0 : endBanTimeUnix,
                 BanActive = true
             }).Result;
-
-            Server.ExecuteCommand($"kickid {player.SteamID} 'Banned from server by admin for reason: {reason}. For appeals, visit our discord which can be found at klonkkusauna.vercel.app'");
+            Server.PrintToConsole($"ID {player.SteamID} id2 {new SteamID(player.SteamID).SteamId2} id3 {new SteamID(player.SteamID).SteamId3} id32 {new SteamID(player.SteamID).SteamId32} accid {new SteamID(player.SteamID).AccountId} pid {player.UserId}");
+            Server.ExecuteCommand($"kickid {player.UserId} Banned from server by admin for reason: {reason}. For appeals, visit our discord which can be found at klonkkusauna.vercel.app");
 
             ReplyToCommand(controller, msg);
 
